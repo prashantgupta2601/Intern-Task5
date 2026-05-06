@@ -6,7 +6,8 @@ const morgan = require('morgan');
 // Import our custom middlewares and config
 const logger = require('./middleware/logger');
 const errorHandler = require('./middleware/errorHandler');
-const { globalLimiter } = require('./middleware/rateLimiter');
+const globalRateLimiter = require('./middleware/rateLimiter');
+const cacheMiddleware = require('./middleware/cache');
 const config = require('./config/appConfig');
 
 // Import controllers and routes
@@ -24,8 +25,8 @@ const setupMiddleware = (app) => {
     // 1. Security headers (Helmet)
     app.use(helmet());
 
-    // 2. Rate Limiting
-    app.use(globalLimiter);
+    // 2. Global Rate Limiting (DDoS Protection)
+    app.use(globalRateLimiter);
 
     // 3. Cross-Origin Resource Sharing (CORS)
     app.use(cors(config.corsOptions));
@@ -75,10 +76,6 @@ app.post('/send-email', async (req, res, next) => {
         next(error);
     }
 });
-
-const cacheMiddleware = require('./middleware/cache');
-
-// ... existing code ...
 
 /**
  * Performance Testing Route
