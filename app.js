@@ -12,6 +12,7 @@ const config = require('./config/appConfig');
 // Import controllers and routes
 const testController = require('./controllers/testController');
 const apiRoutes = require('./routes');
+const { addEmailJob } = require('./jobs/emailQueue');
 
 const app = express();
 
@@ -47,6 +48,33 @@ setupMiddleware(app);
  * Base Routes
  */
 app.get('/', testController.getWelcomeMessage);
+
+/**
+ * Background Job Route
+ * POST /send-email
+ */
+app.post('/send-email', async (req, res, next) => {
+    try {
+        const { email, subject, message } = req.body;
+        
+        if (!email || !subject || !message) {
+            return res.status(400).json({
+                success: false,
+                message: 'Missing required fields: email, subject, or message'
+            });
+        }
+
+        // Enqueue the job
+        await addEmailJob({ email, subject, message });
+
+        return res.status(202).json({
+            success: true,
+            message: 'Email job has been accepted and is being processed in the background.'
+        });
+    } catch (error) {
+        next(error);
+    }
+});
 
 /**
  * Modular API Routes
