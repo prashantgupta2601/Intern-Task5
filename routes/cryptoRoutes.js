@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const Joi = require('joi');
 const cryptoController = require('../controllers/cryptoController');
-const { cryptoLimiter } = require('../middleware/rateLimiter');
+const rateLimiter = require('../middleware/rateLimiter');
 const validate = require('../middleware/validator');
 
 /**
@@ -17,6 +17,6 @@ const coinPriceSchema = Joi.object({
  */
 
 // Fetch price by coin ID
-router.get('/price/:id', cryptoLimiter, validate(coinPriceSchema, 'params'), cryptoController.getPrice);
+router.get('/price/:id', rateLimiter, validate(coinPriceSchema, 'params'), cryptoController.getPrice);
 
 module.exports = router;
