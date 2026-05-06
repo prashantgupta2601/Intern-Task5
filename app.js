@@ -76,6 +76,32 @@ app.post('/send-email', async (req, res, next) => {
     }
 });
 
+const cacheMiddleware = require('./middleware/cache');
+
+// ... existing code ...
+
+/**
+ * Performance Testing Route
+ * GET /api/data
+ * Simulates a heavy database query or processing
+ */
+app.get('/api/data', cacheMiddleware(60), async (req, res) => {
+    // Simulate heavy operation (2.5 seconds)
+    console.log('🐢 Processing heavy operation...');
+    await new Promise(resolve => setTimeout(resolve, 2500));
+
+    return res.status(200).json({
+        success: true,
+        message: 'Heavy data fetched successfully',
+        data: {
+            items: ['Bitcoin', 'Ethereum', 'Cardano', 'Solana'],
+            count: 4,
+            fetchedAt: new Date().toISOString(),
+            source: 'Database (Simulated)'
+        }
+    });
+});
+
 /**
  * Modular API Routes
  * All API routes are prefixed with /api/v1
