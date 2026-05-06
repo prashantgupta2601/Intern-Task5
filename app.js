@@ -6,7 +6,12 @@ const morgan = require('morgan');
 // Import our custom middlewares and config
 const logger = require('./middleware/logger');
 const errorHandler = require('./middleware/errorHandler');
+const { globalLimiter } = require('./middleware/rateLimiter');
 const config = require('./config/appConfig');
+
+// Import controllers and routes
+const testController = require('./controllers/testController');
+const apiRoutes = require('./routes');
 
 const app = express();
 
@@ -18,16 +23,19 @@ const setupMiddleware = (app) => {
     // 1. Security headers (Helmet)
     app.use(helmet());
 
-    // 2. Cross-Origin Resource Sharing (CORS)
+    // 2. Rate Limiting
+    app.use(globalLimiter);
+
+    // 3. Cross-Origin Resource Sharing (CORS)
     app.use(cors(config.corsOptions));
 
-    // 3. Request Logging (Morgan for dev mode + Our custom logger)
+    // 4. Request Logging (Morgan for dev mode + Our custom logger)
     if (config.env === 'development') {
         app.use(morgan('dev'));
     }
     app.use(logger);
 
-    // 4. Body Parsing
+    // 5. Body Parsing
     app.use(express.json());
     app.use(express.urlencoded({ extended: true }));
 };
@@ -36,24 +44,15 @@ const setupMiddleware = (app) => {
 setupMiddleware(app);
 
 /**
- * Standard Test Route
+ * Base Routes
  */
-app.get('/', (req, res) => {
-    res.json({
-        message: 'Welcome to the Advanced Middleware System API!',
-        status: 'Server is running smoothly',
-        timestamp: new Date().toISOString()
-    });
-});
+app.get('/', testController.getWelcomeMessage);
 
 /**
- * Route that triggers an error for testing our error handler
+ * Modular API Routes
+ * All API routes are prefixed with /api/v1
  */
-app.get('/test-error', (req, res, next) => {
-    const error = new Error('This is a simulated production error');
-    error.statusCode = 400;
-    next(error);
-});
+app.use('/api/v1', apiRoutes);
 
 // Attach the Centralized Error Handler LAST
 app.use(errorHandler);

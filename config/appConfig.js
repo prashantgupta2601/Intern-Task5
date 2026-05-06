@@ -12,7 +12,8 @@ const config = {
         methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
         preflightContinue: false,
         optionsSuccessStatus: 204
-    }
+    },
+    cacheTTL: process.env.CACHE_TTL || 60 // Default to 60 seconds
 };
 
 module.exports = config;
