@@ -20,7 +20,13 @@ const logger = (req, res, next) => {
 
         // Log the result in a clean, human-readable format
         // Example: [2024-03-20T10:00:00.000Z] GET /api/test - 200 (15ms)
-        console.log(`[${timestamp}] ${method} ${url} - ${status} (${duration}ms)`);
+        const logMessage = `[${timestamp}] ${method} ${url} - ${status} (${duration}ms)`;
+        
+        if (duration > 1000) {
+            console.warn(`⚠️  SLOW REQUEST: ${logMessage}`);
+        } else {
+            console.log(logMessage);
+        }
     });
 
     // Move to the next middleware in the pipeline
