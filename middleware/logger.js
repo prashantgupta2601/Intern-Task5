@@ -19,8 +19,9 @@ const logger = (req, res, next) => {
         const status = res.statusCode;
 
         // Log the result in a clean, human-readable format
-        // Example: [2024-03-20T10:00:00.000Z] GET /api/test - 200 (15ms)
-        const logMessage = `[${timestamp}] ${method} ${url} - ${status} (${duration}ms)`;
+        // Example: [2024-03-20T10:00:00.000Z] GET /api/test - 200 (15ms) [CACHE HIT]
+        const cacheInfo = res.cacheStatus ? ` [CACHE ${res.cacheStatus}]` : '';
+        const logMessage = `[${timestamp}] ${method} ${url} - ${status} (${duration}ms)${cacheInfo}`;
         
         if (duration > 1000) {
             console.warn(`⚠️  SLOW REQUEST: ${logMessage}`);

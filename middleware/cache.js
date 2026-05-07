@@ -21,11 +21,13 @@ const cacheMiddleware = (defaultTtl = 60) => async (req, res, next) => {
         const cachedData = await redisClient.get(key);
 
         if (cachedData) {
-            // Enhanced logging for Step 3.12 (adding it now to be ready)
+            // Enhanced logging for Step 3.12
+            res.cacheStatus = 'HIT';
             console.log(`[REDIS CACHE] HIT: ${key}`);
             return res.status(200).json(JSON.parse(cachedData));
         }
 
+        res.cacheStatus = 'MISS';
         console.log(`[REDIS CACHE] MISS: ${key}`);
 
         // 2. Prevent Cache Stampede
