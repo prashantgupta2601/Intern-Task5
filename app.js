@@ -4,6 +4,7 @@ const cors = require('cors');
 const morgan = require('morgan');
 
 // Import our custom middlewares and config
+const compression = require('compression');
 const logger = require('./middleware/logger');
 const errorHandler = require('./middleware/errorHandler');
 const globalRateLimiter = require('./middleware/rateLimiter');
@@ -22,22 +23,25 @@ const app = express();
  * Configures the standard middleware pipeline for the application
  */
 const setupMiddleware = (app) => {
-    // 1. Security headers (Helmet)
+    // 1. Response Compression
+    app.use(compression());
+
+    // 2. Security headers (Helmet)
     app.use(helmet());
 
-    // 2. Global Rate Limiting (DDoS Protection)
+    // 3. Global Rate Limiting (DDoS Protection)
     app.use(globalRateLimiter);
 
-    // 3. Cross-Origin Resource Sharing (CORS)
+    // 4. Cross-Origin Resource Sharing (CORS)
     app.use(cors(config.corsOptions));
 
-    // 4. Request Logging (Morgan for dev mode + Our custom logger)
+    // 5. Request Logging (Morgan for dev mode + Our custom logger)
     if (config.env === 'development') {
         app.use(morgan('dev'));
     }
     app.use(logger);
 
-    // 5. Body Parsing
+    // 6. Body Parsing
     app.use(express.json());
     app.use(express.urlencoded({ extended: true }));
 };
