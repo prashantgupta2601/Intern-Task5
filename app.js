@@ -7,7 +7,7 @@ const morgan = require('morgan');
 const compression = require('compression');
 const logger = require('./middleware/logger');
 const errorHandler = require('./middleware/errorHandler');
-const globalRateLimiter = require('./middleware/rateLimiter');
+const { apiLimiter, authLimiter } = require('./middleware/rateLimiter');
 const cacheMiddleware = require('./middleware/cache');
 const config = require('./config/appConfig');
 
@@ -30,7 +30,7 @@ const setupMiddleware = (app) => {
     app.use(helmet());
 
     // 3. Global Rate Limiting (DDoS Protection)
-    app.use(globalRateLimiter);
+    app.use(apiLimiter);
 
     // 4. Cross-Origin Resource Sharing (CORS)
     app.use(cors(config.corsOptions));

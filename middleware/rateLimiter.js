@@ -1,21 +1,29 @@
 const rateLimit = require('express-rate-limit');
 
 /**
- * Global Rate Limiter
- * 100 requests per 15 minutes per IP
+ * Creates a rate limiter with custom config
  */
-const globalRateLimiter = rateLimit({
-    windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 100, // Limit each IP to 100 requests per `window`
-    message: {
-        success: false,
-        error: {
-            message: 'Too many requests from this IP, please try again after 15 minutes',
+const createLimiter = (max, windowMinutes = 15, message = 'Too many requests, please try again later') => {
+    return rateLimit({
+        windowMs: windowMinutes * 60 * 1000,
+        max: max,
+        message: {
+            success: false,
+            message: message,
             status: 429
-        }
-    },
-    standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
-    legacyHeaders: false,  // Disable the `X-RateLimit-*` headers
-});
+        },
+        standardHeaders: true,
+        legacyHeaders: false,
+    });
+};
 
-module.exports = globalRateLimiter;
+// 1. Global API Rate Limiter (General usage)
+const apiLimiter = createLimiter(100, 15, "Too many requests, please try again later");
+
+// 2. Auth Rate Limiter (More strict for security)
+const authLimiter = createLimiter(20, 15, "Too many login attempts, please try again later");
+
+module.exports = {
+    apiLimiter,
+    authLimiter
+};
