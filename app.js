@@ -9,6 +9,8 @@ const logger = require('./middleware/logger');
 const errorHandler = require('./middleware/errorHandler');
 const { apiLimiter, authLimiter } = require('./middleware/rateLimiter');
 const cacheMiddleware = require('./middleware/cache');
+const deduplicate = require('./middleware/deduplicate');
+const autoInvalidate = require('./middleware/invalidator');
 const config = require('./config/appConfig');
 
 // Import controllers and routes
@@ -58,7 +60,7 @@ app.get('/', testController.getWelcomeMessage);
  * Background Job Route
  * POST /send-email
  */
-app.post('/send-email', async (req, res, next) => {
+app.post('/send-email', deduplicate(), async (req, res, next) => {
     try {
         const { email, subject, message } = req.body;
         
@@ -100,6 +102,28 @@ app.get('/api/data', cacheMiddleware(60), async (req, res) => {
             fetchedAt: new Date().toISOString(),
             source: 'Database (Simulated)'
         }
+    });
+});
+
+/**
+ * Data Modification Route (to test cache invalidation)
+ * POST /api/data
+ */
+app.post('/api/data', autoInvalidate('cache:/api/data*'), (req, res) => {
+    return res.status(201).json({
+        success: true,
+        message: 'Data updated and cache invalidated'
+    });
+});
+
+/**
+ * Auth Route (to test rate limiting)
+ * POST /auth/login
+ */
+app.post('/auth/login', authLimiter, (req, res) => {
+    return res.status(200).json({
+        success: true,
+        message: 'Login attempt processed'
     });
 });
 
